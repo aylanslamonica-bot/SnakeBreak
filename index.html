@@ -1,64 +1,1018 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Snake Breaker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Breaker 🐍</title>
+
 <style>
-body{font-family:Arial;background:#222;color:#fff;text-align:center}
-button{padding:10px;margin:5px}
-#shop{display:none;border:1px solid #888;padding:10px;margin:10px auto;width:250px}
-#wallEmoji{font-size:80px}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+background:#1f1f1f;
+color:white;
+text-align:center;
+padding:20px;
+}
+
+h1{
+color:#55ff55;
+margin-bottom:20px;
+}
+
+.caixa{
+background:#2b2b2b;
+padding:15px;
+margin:15px auto;
+max-width:550px;
+border-radius:15px;
+}
+
+button{
+background:#47b947;
+color:white;
+border:none;
+border-radius:10px;
+padding:12px 18px;
+margin:5px;
+font-size:17px;
+cursor:pointer;
+}
+
+button:hover{
+filter:brightness(1.1);
+}
+
+#barraParede{
+width:100%;
+height:22px;
+background:#555;
+border-radius:20px;
+overflow:hidden;
+margin-top:8px;
+}
+
+#vidaParedeBarra{
+width:100%;
+height:100%;
+background:#ff4444;
+transition:.2s;
+}
+
+#mensagem{
+margin-top:15px;
+font-size:18px;
+color:gold;
+}
+
 </style>
 </head>
+
 <body>
+
 <h1>🐍 Snake Breaker</h1>
-<button id="shopBtn">🛒 Loja</button>
-<div id="shop">
-<h3>Loja</h3>
-<button id="upForce">+1 Força (10)</button><br>
-<button id="upEnergy">+10 Energia (10)</button><br>
-<button id="close">Fechar</button>
+
+<div class="caixa">
+
+<h2>👤 Jogador</h2>
+
+<p>❤️ Vida:
+<span id="vida">100</span> /
+<span id="vidaMax">100</span>
+</p>
+
+<p>⚡ Energia:
+<span id="energia">20</span> /
+<span id="energiaMax">20</span>
+</p>
+
+<p>💪 Força:
+<span id="forca">2</span>
+</p>
+
+<p>🪙 Snake Coins:
+<span id="coins">0</span>
+</p>
+ 
 </div>
-<div id="wallEmoji">📃</div>
-<p>Parede: <span id="wall">20</span>/20</p>
-<p>❤️ <span id="life">100</span> | 💪 <span id="force">1</span> | ⚡ <span id="energy">100</span> | 🪙 <span id="coins">0</span></p>
-<button id="fight">⚔️ Enfrente</button>
-<button id="train">🏋️ Treinar</button>
-<p id="msg"></p>
+
+<div class="caixa">
+
+<h2 id="paredeNome">📃 Parede de Papel</h2>
+
+<p>
+❤️
+<span id="paredeVida">20</span> /
+<span id="paredeVidaMax">20</span>
+</p>
+
+<div id="barraParede">
+<div id="vidaParedeBarra"></div>
+</div>
+
+<p>
+💰 Recompensa:
+<span id="recompensa">5</span>
+Snake Coins
+</p>
+
+</div>
+
+<div class="caixa">
+
+<button onclick="enfrentar()">👊 Enfrente</button>
+
+<button onclick="treinar()">🏋️ Evoluir</button>
+
+<button onclick="esteira()">🏃 Esteira</button>
+
+<button onclick="abrirLoja()">🛒 Loja</button>
+
+<button onclick="abrirPets()">🥚 Pets</button>
+  
+<button onclick="abrirInventario()">🎒 Inventário</button>
+  
+</div>
+
+<div id="telaInventario" style="display:none;background:#2b2b2b;padding:15px;border-radius:12px;margin:15px auto;max-width:500px;">
+
+<h2>🎒 Inventário</h2>
+
+<p>🐾 Seus Pets</p>
+  
+<p id="limiteInventarioTexto">🎒 Pets no inventário: 0/100</p> 
+  
+<p id="contadorInventario">🐾 Equipados: 0/3</p>
+  
+<div id="listaInventario"></div>
+  
+<button onclick="fecharInventario()">❌ Fechar</button>
+
+ </div>
+  
+<div id="telaLoja" style="display:none;background:#2b2b2b;padding:15px;border-radius:12px;margin:15px auto;max-width:500px;">
+
+<h2>🛒 Loja</h2>
+
+<p><b>💪 Força Melhorada</b></p>
+<p>Dobra o ganho da Evolução</p>
+<p>💰 <span id="precoForca">250</span> Snake Coins</p>
+<button onclick="comprarForca()">Comprar</button>
+
+<hr>
+
+<p><b>❤️ Vida Melhorada</b></p>
+<p>+20 Vida Máxima</p>
+<p>💰 <span id="precoVida">300</span> Snake Coins</p>
+<button onclick="comprarVida()">Comprar</button>
+
+<hr>
+
+<p><b>⚡ Energia Melhorada</b></p>
+<p>+10 Energia Máxima</p>
+ <p>💰 <span id="precoEnergia">350</span> Snake Coins</p>
+<button onclick="comprarEnergia()">Comprar</button>
+
+<hr>
+
+<p><b>🐾 Limite de Pets</b></p>
+<p>+1 Pet Equipado</p>
+<p>💰 <span id="precoPets">1500</span> Snake Coins</p>
+
+<button onclick="comprarLimitePets()">Comprar</button>
+  
+<br><br>
+
+<button onclick="abrirLoja()">❌ Fechar</button>
+
+</div>
+  
+  <div id="telaPets" style="display:none;background:#2b2b2b;padding:15px;border-radius:12px;margin:15px auto;max-width:500px;">
+
+<h2>🥚 Pets</h2>
+
+
+<hr>
+
+<h3>🥚 Ovo de Galinha</h3>
+
+<p>💰 100 Snake Coins</p>
+
+<button onclick="abrirOvodeGalinha()">🥚 Abrir Ovo</button>
+
+<br><br>
+
+<button onclick="abrirPets()">❌ Fechar</button>
+
+  </div>
+  
+<p id="mensagem">
+Bem-vindo ao Snake Breaker!
+</p>
+
 <script>
-let life=100,force=1,energy=100,coins=0,wall=20;
-const E=id=>document.getElementById(id);
-function draw(){
-E("life").textContent=life;
-E("force").textContent=force;
-E("energy").textContent=energy;
-E("coins").textContent=coins;
-E("wall").textContent=wall;
+   
+  
+let bonusCoins=0;
+  
+let vida=100;
+let vidaMax=100;
+
+let energia=20;
+let energiaMax=20;
+
+let forca=2;
+
+let coins=0;
+  
+let pets=[];  
+let petsEquipados=0;
+let petsEquipadosStatus=[];  
+let limitePets=3;
+let limiteInventario=100;
+  
+let parede={
+  
+  
+
+
+nome:"📃 Parede de Papel",
+vida:20,
+vidaMax:20,
+recompensa:5,
+dano:6
+};
+
+function atualizar(){
+
+if(vida<0) vida=0;
+if(vida>vidaMax) vida=vidaMax;
+
+if(energia<0) energia=0;
+if(energia>energiaMax) energia=energiaMax;
+
+document.getElementById("vida").textContent=vida;
+document.getElementById("vidaMax").textContent=vidaMax;
+
+document.getElementById("energia").textContent=energia;
+document.getElementById("energiaMax").textContent=energiaMax;
+
+document.getElementById("forca").textContent=forca;
+
+document.getElementById("coins").textContent=coins;
+
+ document.getElementById("contadorInventario").textContent=
+"🐾 Equipados: "+petsEquipados+"/"+limitePets;
+  
+document.getElementById("paredeNome").textContent=parede.nome;
+
+document.getElementById("paredeVida").textContent=parede.vida;
+document.getElementById("paredeVidaMax").textContent=parede.vidaMax;
+
+document.getElementById("recompensa").textContent=parede.recompensa;
+
+document.getElementById("vidaParedeBarra").style.width=
+(parede.vida/parede.vidaMax*100)+"%";
+
 }
-E("shopBtn").onclick=()=>E("shop").style.display="block";
-E("close").onclick=()=>E("shop").style.display="none";
-E("train").onclick=()=>{
- force++;
- energy=Math.min(100,energy+10);
- E("msg").textContent="💪 Treinou!";
- draw();
+
+function salvarJogo(){
+
+localStorage.setItem("coins",coins);
+
+localStorage.setItem("forca",forca);
+
+localStorage.setItem("vidaMax",vidaMax);
+
+localStorage.setItem("energiaMax",energiaMax);
+
+localStorage.setItem("ganhoForca",ganhoForca);
+
+localStorage.setItem("bonusCoins",bonusCoins);
+
+localStorage.setItem("limitePets",limitePets);
+
+localStorage.setItem("precoForca",precoForca);
+
+localStorage.setItem("precoVida",precoVida);
+
+localStorage.setItem("precoEnergia",precoEnergia);
+
+localStorage.setItem("precoPets",precoPets);
+  
+localStorage.setItem("pets",JSON.stringify(pets));
+  
+localStorage.setItem("petsEquipadosStatus",JSON.stringify(petsEquipadosStatus));
+ 
+}
+  
+function carregarJogo(){
+
+if(localStorage.getItem("coins")!==null){
+coins=Number(localStorage.getItem("coins"));
+}
+
+if(localStorage.getItem("forca")!==null){
+forca=Number(localStorage.getItem("forca"));
+}
+
+if(localStorage.getItem("vidaMax")!==null){
+vidaMax=Number(localStorage.getItem("vidaMax"));
+vida=vidaMax;
+}
+
+if(localStorage.getItem("energiaMax")!==null){
+energiaMax=Number(localStorage.getItem("energiaMax"));
+energia=energiaMax;
+}
+
+if(localStorage.getItem("ganhoForca")!==null){
+ganhoForca=Number(localStorage.getItem("ganhoForca"));
+}
+
+if(localStorage.getItem("bonusCoins")!==null){
+bonusCoins=Number(localStorage.getItem("bonusCoins"));
+}
+
+if(localStorage.getItem("limitePets")!==null){
+limitePets=Number(localStorage.getItem("limitePets"));
+}
+
+if(localStorage.getItem("precoForca")!==null){
+precoForca=Number(localStorage.getItem("precoForca"));
+document.getElementById("precoForca").textContent=precoForca;
+}
+
+if(localStorage.getItem("precoVida")!==null){
+precoVida=Number(localStorage.getItem("precoVida"));
+document.getElementById("precoVida").textContent=precoVida;
+}
+
+if(localStorage.getItem("precoEnergia")!==null){
+precoEnergia=Number(localStorage.getItem("precoEnergia"));
+document.getElementById("precoEnergia").textContent=precoEnergia;
+}
+
+if(localStorage.getItem("precoPets")!==null){
+precoPets=Number(localStorage.getItem("precoPets"));
+document.getElementById("precoPets").textContent=precoPets;
+}
+
+if(localStorage.getItem("pets")!==null){
+pets=JSON.parse(localStorage.getItem("pets"));
+}
+
+if(localStorage.getItem("petsEquipadosStatus")!==null){
+petsEquipadosStatus=JSON.parse(localStorage.getItem("petsEquipadosStatus"));
+}
+
+petsEquipados=0;
+
+petsEquipadosStatus.forEach(function(status){
+if(status){
+petsEquipados++;
+}
+});
+
+atualizar();
+
+  }
+  
+
+
+function enfrentar(){
+
+parede.vida-=forca;
+
+vida-=parede.dano;
+
+if(parede.vida<=0){
+
+coins+=parede.recompensa+bonusCoins;
+
+salvarJogo();
+
+if(parede.nome=="📃 Parede de Papel"){
+
+parede.nome="📦 Parede de Papelão";
+parede.vida=250;
+parede.vidaMax=250;
+parede.recompensa=50;
+parede.dano=10;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 📦 Papelão!";
+
+}
+
+else if(parede.nome=="📦 Parede de Papelão"){
+
+parede.nome="🪵 Parede de Madeira";
+parede.vida=560;
+parede.vidaMax=560;
+parede.recompensa=120;
+parede.dano=15;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 🪵 Madeira!";
+
+}
+
+else if(parede.nome=="🪵 Parede de Madeira"){
+
+parede.nome="🧱 Parede de Tijolo";
+parede.vida=1200;
+parede.vidaMax=1200;
+parede.recompensa=250;
+parede.dano=22;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 🧱 Tijolo!";
+
+}
+
+else if(parede.nome=="🧱 Parede de Tijolo"){
+
+parede.nome="🪨 Parede de Pedra";
+parede.vida=2500;
+parede.vidaMax=2500;
+parede.recompensa=500;
+parede.dano=30;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 🪨 Pedra!";
+
+}
+
+else if(parede.nome=="🪨 Parede de Pedra"){
+
+parede.nome="⚙️ Parede de Ferro";
+parede.vida=5000;
+parede.vidaMax=5000;
+parede.recompensa=1000;
+parede.dano=40;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: ⚙️ Ferro!";
+
+}
+
+else if(parede.nome=="⚙️ Parede de Ferro"){
+
+parede.nome="💎 Parede de Diamante";
+parede.vida=10000;
+parede.vidaMax=10000;
+parede.recompensa=2000;
+parede.dano=55;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 💎 Diamante!";
+
+}
+
+else if(parede.nome=="💎 Parede de Diamante"){
+
+parede.nome="🟣 Parede de Obsidiana";
+parede.vida=20000;
+parede.vidaMax=20000;
+parede.recompensa=4000;
+parede.dano=70;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 🟣 Obsidiana!";
+
+}
+
+else if(parede.nome=="🟣 Parede de Obsidiana"){
+
+parede.nome="🪨 Parede de Rocha Matriz";
+parede.vida=40000;
+parede.vidaMax=40000;
+parede.recompensa=8000;
+parede.dano=90;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 🪨 Rocha Matriz!";
+
+}
+
+else if(parede.nome=="🪨 Parede de Rocha Matriz"){
+
+parede.nome="🌌 Parede Galáctica";
+parede.vida=80000;
+parede.vidaMax=80000;
+parede.recompensa=16000;
+parede.dano=120;
+
+document.getElementById("mensagem").textContent=
+"🎉 Nova parede desbloqueada: 🌌 Galáctica!";
+
+}
+
+else if(parede.nome=="🌌 Parede Galáctica"){
+
+parede.nome="🌠 Parede Cósmica";
+parede.vida=160000;
+parede.vidaMax=160000;
+parede.recompensa=32000;
+parede.dano=160;
+
+document.getElementById("mensagem").textContent=
+"🎉 ÚLTIMA PAREDE: 🌠 CÓSMICA!";
+
+}
+
+else{
+
+parede.vida=parede.vidaMax;
+
+document.getElementById("mensagem").textContent=
+"🏆 Esse foi o final de Snake Breaker! Em breve teremos mais atualizações. Obrigado por jogar nosso jogo! 🐍💚";
+
+  }
+  
+
+}else{
+
+document.getElementById("mensagem").textContent=
+"👊 Você causou "+forca+" de dano!";
+  
+}
+
+if(vida<=0){
+
+vida=vidaMax;
+
+parede.nome="📃 Parede de Papel";
+parede.vida=20;
+parede.vidaMax=20;
+parede.recompensa=5;
+parede.dano=6;
+
+  
+document.getElementById("mensagem").textContent=
+"💀 Você morreu e voltou para a Parede de Papel.";
+
+}
+
+atualizar();
+
+}
+
+function treinar(){
+
+if(energia<3){
+
+document.getElementById("mensagem").textContent=
+"😴 Sua cobrinha está cansada!";
+
+return;
+
+}
+
+energia-=3;
+
+forca+=ganhoForca;
+
+document.getElementById("mensagem").textContent=
+"💪 Força aumentou para "+forca+"!";
+
+atualizar();
+  
+salvarJogo();
+  
+}
+
+function esteira(){
+
+if(energia>=energiaMax){
+
+document.getElementById("mensagem").textContent=
+"⚡ Energia cheia!";
+
+return;
+
+}
+
+energia++;
+
+document.getElementById("mensagem").textContent=
+"🏃 +1 Energia!";
+
+atualizar();
+  
+}
+
+function recalcularBonusPets(){
+
+bonusCoins=0;
+ganhoForca=1;
+vidaMax=100;
+
+pets.forEach(function(pet,index){
+
+if(!petsEquipadosStatus[index]){
+return;
+}
+
+if(pet=="🐔 Galinha"){
+bonusCoins++;
+}
+
+if(pet=="🐥 Pintinho"){
+ganhoForca++;
+}
+
+if(pet=="🦆 Pato"){
+vidaMax+=20;
+vida=vidaMax;  
+}
+
+});
+  
+}
+
+  
+function abrirInventario(){
+
+document.getElementById("telaInventario").style.display="block";
+document.getElementById("limiteInventarioTexto").textContent=
+"🎒 Pets no inventário: "+pets.length+"/"+limiteInventario;  
+let lista=document.getElementById("listaInventario");
+
+lista.innerHTML="";
+
+pets.forEach(function(pet,index){
+
+let item=document.createElement("p");
+
+item.textContent=pet+" ";
+  
+if(pet=="🐔 Galinha"){
+item.textContent+="🪙 +1 Snake Coin por parede";
+}
+
+if(pet=="🐥 Pintinho"){
+item.textContent+="💪 +1 ganho de força";
+}
+
+if(pet=="🦆 Pato"){
+item.textContent+="❤️ +20 Vida Máxima";
+  
+}
+  
+let botao=document.createElement("button");
+
+botao.textContent="Equipar";
+
+item.appendChild(botao);
+  
+let desequipar=document.createElement("button");
+
+desequipar.textContent="Desequipar";
+
+item.appendChild(desequipar);
+  
+ desequipar.onclick=function(){
+
+if(!petsEquipadosStatus[index]){
+  
+document.getElementById("mensagem").textContent=
+"🐾 Esse pet já está desequipado!";
+
+return;
+
+}
+
+petsEquipadosStatus[index]=false;
+
+petsEquipados--;
+
+recalcularBonusPets();
+   
+atualizar();
+
+document.getElementById("mensagem").textContent=
+"🐾 Pet desequipado!";
+
+salvarJogo();
+   
 };
-E("fight").onclick=()=>{
- if(energy<=0){alert("Sem energia");return;}
- energy--;
- wall-=force;
- E("wallEmoji").textContent="💥";
- setTimeout(()=>E("wallEmoji").textContent="📃",180);
- if(wall<=0){coins+=20;wall=20;E("msg").textContent="Parede destruída!";}
- life--;
- if(life<=0){alert("Você morreu!");life=100;energy=100;wall=20;}
- draw();
-};
-E("upForce").onclick=()=>{if(coins<10)return alert("Sem moedas");coins-=10;force++;draw();};
-E("upEnergy").onclick=()=>{if(coins<10)return alert("Sem moedas");coins-=10;energy=Math.min(100,energy+10);draw();};
-draw();
+  
+ botao.onclick=function(){
+
+if(petsEquipados>=limitePets){
+
+document.getElementById("mensagem").textContent=
+"🐾 Seu limite de pets foi atingido!";
+
+return;
+
+}
+if(petsEquipadosStatus[index]){
+
+document.getElementById("mensagem").textContent=
+"🐾 Esse pet já está equipado!";
+
+return;
+
+}
+   
+petsEquipados++;
+   
+petsEquipadosStatus[index]=true;
+
+ if(pet=="🐔 Galinha"){
+
+bonusCoins++;
+
+}
+
+if(pet=="🐥 Pintinho"){
+
+ganhoForca++;
+
+}
+
+if(pet=="🦆 Pato"){
+
+vidaMax+=20;
+vida=vidaMax;
+
+}  
+atualizar();
+
+document.getElementById("mensagem").textContent=
+"🐾 Pet equipado!";
+
+salvarJogo();
+   
+}; 
+let vender=document.createElement("button");
+
+vender.textContent="Vender";
+
+item.appendChild(vender);
+  
+vender.onclick=function(){
+
+let index=pets.indexOf(pet);
+
+if(index!==-1){
+
+petsEquipados--;
+
+pets.splice(index,1);
+
+petsEquipadosStatus.splice(index,1);
+
+recalcularBonusPets();
+  
+coins+=50;
+
+document.getElementById("mensagem").textContent=
+"🪙 Pet vendido por 50 Snake Coins!";
+
+atualizar();
+
+abrirInventario();
+
+salvarJogo();
+  
+}
+
+};  
+lista.appendChild(item);
+
+});
+  
+}
+
+ function fecharInventario(){
+
+document.getElementById("telaInventario").style.display="none";
+
+ }
+  function abrirLoja(){
+
+let loja=document.getElementById("telaLoja");
+
+if(loja.style.display=="block"){
+
+loja.style.display="none";
+
+}else{
+
+loja.style.display="block";
+
+}
+
+  }
+
+
+function abrirPets(){
+
+let tela=document.getElementById("telaPets");
+
+if(tela.style.display=="block"){
+
+tela.style.display="none";
+
+}else{
+
+tela.style.display="block";
+
+}
+
+}
+
+
+let ganhoForca=1;
+
+let precoPets=1500;  
+let precoForca=250;
+let precoVida=300;
+let precoEnergia=350;
+
+function comprarForca(){
+
+if(coins<precoForca){
+
+document.getElementById("mensagem").textContent="❌ Snake Coins insuficientes!";
+return;
+
+}
+
+coins-=precoForca;
+
+ganhoForca*=2;
+
+precoForca*=2;
+
+document.getElementById("precoForca").textContent=precoForca;
+
+document.getElementById("mensagem").textContent=
+"💪 Agora cada treino dá +"+ganhoForca+" de força!";
+
+atualizar();
+
+salvarJogo();  
+}
+
+function comprarVida(){
+
+if(coins<precoVida){
+
+document.getElementById("mensagem").textContent="❌ Snake Coins insuficientes!";
+return;
+
+}
+
+coins-=precoVida;
+
+vidaMax+=20;
+vida=vidaMax;
+
+precoVida+=300;
+
+document.getElementById("precoVida").textContent=precoVida;
+
+document.getElementById("mensagem").textContent=
+"❤️ Vida Máxima aumentada!";
+
+atualizar();
+  
+salvarJogo();
+}
+
+function comprarEnergia(){
+
+if(coins<precoEnergia){
+
+document.getElementById("mensagem").textContent="❌ Snake Coins insuficientes!";
+return;
+
+}
+
+coins-=precoEnergia;
+
+energiaMax+=10;
+energia=energiaMax;
+
+precoEnergia+=350;
+
+document.getElementById("precoEnergia").textContent=precoEnergia;
+
+document.getElementById("mensagem").textContent=
+"⚡ Energia Máxima aumentada!";
+
+atualizar();
+  
+salvarJogo();
+}
+  
+function comprarLimitePets(){
+
+if(coins<precoPets){
+
+document.getElementById("mensagem").textContent=
+"❌ Snake Coins insuficientes!";
+
+return;
+
+}
+
+coins-=precoPets;
+
+limitePets++;
+
+precoPets*=2;
+
+document.getElementById("precoPets").textContent=precoPets;
+
+document.getElementById("mensagem").textContent=
+"🐾 Agora você pode equipar "+limitePets+" pets!";
+
+atualizar();
+  
+salvarJogo();
+}
+  
+function abrirOvodeGalinha(){
+
+if(pets.length>=limiteInventario){
+
+document.getElementById("mensagem").textContent=
+"🐾 Seu limite de pets foi atingido!";
+
+return;
+
+}
+
+if(coins<100){
+
+document.getElementById("mensagem").textContent=
+"❌ Você não tem Snake Coins suficientes!";
+
+return;
+
+}
+
+coins-=100;
+
+let sorteio=Math.random()*100;
+
+let pet="";
+
+if(sorteio<50){
+
+pet="🐔 Galinha";
+
+}else if(sorteio<85){
+
+pet="🐥 Pintinho";
+
+}else{
+
+pet="🦆 Pato";
+
+
+}
+
+pets.push(pet);
+
+petsEquipadosStatus.push(false);
+  
+
+if(pet=="🐔 Galinha"){
+
+
+}
+
+if(pet=="🐥 Pintinho"){
+
+
+
+}
+
+document.getElementById("mensagem").textContent=
+"🥚 Você conseguiu: "+pet+"!";
+
+salvarJogo();  
+
+  }
+  
+carregarJogo();
+
+atualizar();
+
 </script>
+
 </body>
 </html>
