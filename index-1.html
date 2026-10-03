@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Snake Breaker</title>
+<style>
+body{font-family:Arial;background:#222;color:#fff;text-align:center}
+button{padding:10px;margin:5px}
+#shop{display:none;border:1px solid #888;padding:10px;margin:10px auto;width:250px}
+#wallEmoji{font-size:80px}
+</style>
+</head>
+<body>
+<h1>🐍 Snake Breaker</h1>
+<button id="shopBtn">🛒 Loja</button>
+<div id="shop">
+<h3>Loja</h3>
+<button id="upForce">+1 Força (10)</button><br>
+<button id="upEnergy">+10 Energia (10)</button><br>
+<button id="close">Fechar</button>
+</div>
+<div id="wallEmoji">📃</div>
+<p>Parede: <span id="wall">20</span>/20</p>
+<p>❤️ <span id="life">100</span> | 💪 <span id="force">1</span> | ⚡ <span id="energy">100</span> | 🪙 <span id="coins">0</span></p>
+<button id="fight">⚔️ Enfrente</button>
+<button id="train">🏋️ Treinar</button>
+<p id="msg"></p>
+<script>
+let life=100,force=1,energy=100,coins=0,wall=20;
+const E=id=>document.getElementById(id);
+function draw(){
+E("life").textContent=life;
+E("force").textContent=force;
+E("energy").textContent=energy;
+E("coins").textContent=coins;
+E("wall").textContent=wall;
+}
+E("shopBtn").onclick=()=>E("shop").style.display="block";
+E("close").onclick=()=>E("shop").style.display="none";
+E("train").onclick=()=>{
+ force++;
+ energy=Math.min(100,energy+10);
+ E("msg").textContent="💪 Treinou!";
+ draw();
+};
+E("fight").onclick=()=>{
+ if(energy<=0){alert("Sem energia");return;}
+ energy--;
+ wall-=force;
+ E("wallEmoji").textContent="💥";
+ setTimeout(()=>E("wallEmoji").textContent="📃",180);
+ if(wall<=0){coins+=20;wall=20;E("msg").textContent="Parede destruída!";}
+ life--;
+ if(life<=0){alert("Você morreu!");life=100;energy=100;wall=20;}
+ draw();
+};
+E("upForce").onclick=()=>{if(coins<10)return alert("Sem moedas");coins-=10;force++;draw();};
+E("upEnergy").onclick=()=>{if(coins<10)return alert("Sem moedas");coins-=10;energy=Math.min(100,energy+10);draw();};
+draw();
+</script>
+</body>
+</html>
