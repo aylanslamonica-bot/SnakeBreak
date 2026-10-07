@@ -975,6 +975,7 @@ salvarJogo();
 
 };
 
+  
 botoes.appendChild(botaoDesequipar);
 
 botoes.appendChild(botaoVender);
@@ -1045,6 +1046,9 @@ tocar(1200,0.08);
   
 petsEquipadosStatus[index]=true;
 
+document.getElementById("mensagem").textContent=
+"🐾 Pet desequipado!";
+   
  if(pet=="🐔 Galinha"){
 
 bonusCoins++;
@@ -1078,7 +1082,7 @@ atualizar();
 abrirInventario();
 
 document.getElementById("mensagem").textContent=
-"🐾 Pet desequipado!";
+"🐾 Pet equipado!"
 
 salvarJogo();
    
