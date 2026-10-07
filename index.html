@@ -71,11 +71,25 @@ font-size:18px;
 color:gold;
 }
 
+#botaoConfig{
+position:fixed;
+top:15px;
+right:15px;
+width:50px;
+height:50px;
+font-size:25px;
+border-radius:50%;
+padding:0;
+z-index:1000;
+}
+  
 </style>
 </head>
 
 <body>
 
+<button id="botaoConfig" onclick="abrirConfiguracoes()">⚙️</button>
+  
 <h1>🐍 Snake Breaker</h1>
 
 <div class="caixa">
@@ -149,6 +163,14 @@ Snake Coins
 <p id="limiteInventarioTexto">🎒 Pets no inventário: 0/100</p> 
   
 <p id="contadorInventario">🐾 Equipados: 0/3</p>
+
+<h3>⭐ Pets Equipados</h3>
+
+<div id="petsEquipadosLista">
+Nenhum pet equipado.
+</div>
+
+<hr>
   
 <div id="listaInventario"></div>
   
@@ -181,6 +203,14 @@ Snake Coins
 
 <hr>
 
+<p><b>🏃 Esteira Melhorada</b></p>
+<p>Dobra o ganho da Esteira</p>
+<p>💰 <span id="precoEsteira">400</span> Snake Coins</p>
+
+<button onclick="comprarEsteira()">Comprar</button>
+  
+<hr>
+
 <p><b>🐾 Limite de Pets</b></p>
 <p>+1 Pet Equipado</p>
 <p>💰 <span id="precoPets">1500</span> Snake Coins</p>
@@ -210,14 +240,102 @@ Snake Coins
 
 <button onclick="abrirPets()">❌ Fechar</button>
 
-  </div>
+ </div>
+
+<div id="telaConfiguracoes" style="display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:#2b2b2b;
+padding:15px;
+border-radius:12px;
+max-width:500px;
+width:90%;
+z-index:9999;"
+
+<h2>⚙️ Configurações</h2>
+
+<button onclick="ativarSom()">🔊 Ativar efeitos sonoros</button>
+
+<br><br>
+
+<button onclick="desativarSom()">🔇 Desativar efeitos sonoros</button>
+
+<br><br>
+
+<button onclick="abrirConfiguracoes()">❌ Fechar</button>
+
+</div>
   
 <p id="mensagem">
 Bem-vindo ao Snake Breaker!
 </p>
 
 <script>
-   
+  
+const audio = new (window.AudioContext || window.webkitAudioContext)();
+  
+function tocar(frequencia, duracao){
+
+if(!efeitosSonoros){
+return;
+}
+  
+let osc = audio.createOscillator();
+let ganho = audio.createGain();
+
+osc.connect(ganho);
+ganho.connect(audio.destination);
+
+osc.type = "square";
+
+osc.frequency.value = frequencia;
+
+ganho.gain.value = 0.08;
+
+osc.start();
+
+ganho.gain.exponentialRampToValueAtTime(
+0.0001,
+audio.currentTime + duracao
+);
+
+osc.stop(audio.currentTime + duracao);
+
+}
+
+function desativarSom(){
+
+efeitosSonoros=false;
+
+document.getElementById("mensagem").textContent=
+"🔇 Efeitos sonoros desativados!";
+
+salvarJogo();
+
+}
+
+function ativarSom(){
+
+efeitosSonoros=true;
+
+document.getElementById("mensagem").textContent=
+"🔊 Efeitos sonoros ativados!";
+
+salvarJogo();
+
+tocar(800,0.08);
+
+}
+  
+let vidaBase=100;
+let ganhoForcaBase=1;   
+
+let ganhoEsteiraBase=1;
+let ganhoEsteira=1;
+
+let efeitosSonoros=true;
   
 let bonusCoins=0;
   
@@ -238,9 +356,6 @@ let limitePets=3;
 let limiteInventario=100;
   
 let parede={
-  
-  
-
 
 nome:"📃 Parede de Papel",
 vida:20,
@@ -304,14 +419,22 @@ localStorage.setItem("precoVida",precoVida);
 
 localStorage.setItem("precoEnergia",precoEnergia);
 
+localStorage.setItem("precoEsteira",precoEsteira);
+  
+localStorage.setItem("ganhoEsteiraBase",ganhoEsteiraBase);
+  
 localStorage.setItem("precoPets",precoPets);
   
 localStorage.setItem("pets",JSON.stringify(pets));
   
 localStorage.setItem("petsEquipadosStatus",JSON.stringify(petsEquipadosStatus));
- 
-}
   
+localStorage.setItem("energia",energia);
+
+localStorage.setItem("efeitosSonoros",efeitosSonoros);
+  
+}
+
 function carregarJogo(){
 
 if(localStorage.getItem("coins")!==null){
@@ -336,10 +459,23 @@ if(localStorage.getItem("ganhoForca")!==null){
 ganhoForca=Number(localStorage.getItem("ganhoForca"));
 }
 
+if(localStorage.getItem("vidaBase")!==null){
+vidaBase=Number(localStorage.getItem("vidaBase"));
+}
+
+if(localStorage.getItem("ganhoForcaBase")!==null){
+ganhoForcaBase=Number(localStorage.getItem("ganhoForcaBase"));
+ganhoForca=ganhoForcaBase;
+}
+ 
 if(localStorage.getItem("bonusCoins")!==null){
 bonusCoins=Number(localStorage.getItem("bonusCoins"));
 }
 
+if(localStorage.getItem("energia")!==null){
+energia=Number(localStorage.getItem("energia"));
+}
+  
 if(localStorage.getItem("limitePets")!==null){
 limitePets=Number(localStorage.getItem("limitePets"));
 }
@@ -358,7 +494,24 @@ if(localStorage.getItem("precoEnergia")!==null){
 precoEnergia=Number(localStorage.getItem("precoEnergia"));
 document.getElementById("precoEnergia").textContent=precoEnergia;
 }
+  
+if(localStorage.getItem("precoEsteira")!==null){
+precoEsteira=Number(localStorage.getItem("precoEsteira"));
+document.getElementById("precoEsteira").textContent=precoEsteira;
+}
 
+if(localStorage.getItem("ganhoEsteiraBase")!==null){
+ganhoEsteiraBase=Number(localStorage.getItem("ganhoEsteiraBase"));
+ganhoEsteira=ganhoEsteiraBase;
+}
+
+if(localStorage.getItem("efeitosSonoros")!==null){
+
+efeitosSonoros=
+localStorage.getItem("efeitosSonoros")=="true";
+
+}
+  
 if(localStorage.getItem("precoPets")!==null){
 precoPets=Number(localStorage.getItem("precoPets"));
 document.getElementById("precoPets").textContent=precoPets;
@@ -382,20 +535,50 @@ petsEquipados++;
 
 atualizar();
 
-  }
-  
+pets.forEach(function(pet,index){
 
+if(!petsEquipadosStatus[index]) return;
+
+if(pet=="🐔 Galinha"){
+bonusCoins++;
+}
+
+if(pet=="🐥 Pintinho"){
+ganhoForca++;
+}
+
+if(pet=="🦆 Pato"){
+vidaMax+=20;
+}
+
+if(pet=="🐦 Codorna"){
+ganhoEsteira++;
+}
+  
+});
+  
+  }
 
 function enfrentar(){
 
-parede.vida-=forca;
-
+parede.vida-=forca
+  
+tocar(170 + Math.random()*30,0.08);
+  
 vida-=parede.dano;
 
 if(parede.vida<=0){
 
 coins+=parede.recompensa+bonusCoins;
 
+tocar(900,0.06);
+
+setTimeout(function(){
+
+tocar(1200,0.08);
+
+},60);
+  
 salvarJogo();
 
 if(parede.nome=="📃 Parede de Papel"){
@@ -535,6 +718,26 @@ parede.vida=parede.vidaMax;
 document.getElementById("mensagem").textContent=
 "🏆 Esse foi o final de Snake Breaker! Em breve teremos mais atualizações. Obrigado por jogar nosso jogo! 🐍💚";
 
+tocar(600,0.10);
+
+setTimeout(function(){
+
+tocar(800,0.10);
+
+},120);
+
+setTimeout(function(){
+
+tocar(1000,0.20);
+
+},240);
+
+setTimeout(function(){
+
+tocar(1300,0.30);
+
+},420);
+  
   }
   
 
@@ -580,6 +783,14 @@ energia-=3;
 
 forca+=ganhoForca;
 
+tocar(500,0.08);
+
+setTimeout(function(){
+
+tocar(700,0.08);
+
+},60);
+  
 document.getElementById("mensagem").textContent=
 "💪 Força aumentou para "+forca+"!";
 
@@ -600,21 +811,33 @@ return;
 
 }
 
-energia++;
+energia+=ganhoEsteira;
 
+tocar(350,0.04);
+
+setTimeout(function(){
+
+tocar(450,0.04);
+
+},30);
+  
 document.getElementById("mensagem").textContent=
-"🏃 +1 Energia!";
+"🏃 +"+ganhoEsteira+" Energia!";
 
 atualizar();
+
+salvarJogo();
   
 }
 
 function recalcularBonusPets(){
 
 bonusCoins=0;
-ganhoForca=1;
-vidaMax=100;
+ganhoForca=ganhoForcaBase;
+ganhoEsteira=ganhoEsteiraBase;  
+vidaMax=vidaBase;
 
+  
 pets.forEach(function(pet,index){
 
 if(!petsEquipadosStatus[index]){
@@ -631,9 +854,16 @@ ganhoForca++;
 
 if(pet=="🦆 Pato"){
 vidaMax+=20;
-vida=vidaMax;  
+
+if(vida>vidaMax){
+    vida=vidaMax;
+}  
 }
 
+if(pet=="🐦 Codorna"){
+ganhoEsteira++;
+}
+  
 });
   
 }
@@ -646,9 +876,117 @@ document.getElementById("limiteInventarioTexto").textContent=
 "🎒 Pets no inventário: "+pets.length+"/"+limiteInventario;  
 let lista=document.getElementById("listaInventario");
 
-lista.innerHTML="";
+let listaEquipados=document.getElementById("petsEquipadosLista");
 
+listaEquipados.innerHTML="";
+  
+lista.innerHTML="";
+  
 pets.forEach(function(pet,index){
+
+if(petsEquipadosStatus[index]){
+let equipado=document.createElement("p");
+
+equipado.textContent=pet+" ";
+
+let botaoDesequipar=document.createElement("button");
+
+botaoDesequipar.textContent="Desequipar";
+
+let botoes=document.createElement("div");
+
+botoes.style.display="flex";
+
+botoes.style.justifyContent="center";
+
+botoes.style.gap="10px";
+  
+equipado.appendChild(botaoDesequipar);
+
+botaoDesequipar.onclick=function(){
+
+petsEquipadosStatus[index]=false;
+
+petsEquipados--;
+
+tocar(700,0.06);
+
+setTimeout(function(){
+
+tocar(500,0.08);
+
+},50);
+
+recalcularBonusPets();
+
+atualizar();
+
+abrirInventario();
+
+document.getElementById("mensagem").textContent=
+"🐾 Pet desequipado!";
+
+salvarJogo();
+
+};
+
+let botaoVender=document.createElement("button");
+
+botaoVender.textContent="Vender";
+
+equipado.appendChild(botaoVender);
+
+botaoVender.onclick=function(){
+
+if(petsEquipadosStatus[index]){
+petsEquipados--;
+}
+
+pets.splice(index,1);
+
+petsEquipadosStatus.splice(index,1);
+
+recalcularBonusPets();
+
+coins+=50;
+
+tocar(600,0.05);
+
+setTimeout(function(){
+
+tocar(900,0.06);
+
+},40);
+
+setTimeout(function(){
+
+tocar(1200,0.08);
+
+},80);
+
+document.getElementById("mensagem").textContent=
+"🪙 Pet vendido por 50 Snake Coins!";
+
+atualizar();
+
+abrirInventario();
+
+salvarJogo();
+
+};
+
+botoes.appendChild(botaoDesequipar);
+
+botoes.appendChild(botaoVender);
+
+equipado.appendChild(botoes);
+  
+listaEquipados.appendChild(equipado);
+}
+  
+if(petsEquipadosStatus[index]){
+return;
+}
 
 let item=document.createElement("p");
 
@@ -664,7 +1002,10 @@ item.textContent+="💪 +1 ganho de força";
 
 if(pet=="🦆 Pato"){
 item.textContent+="❤️ +20 Vida Máxima";
-  
+}
+
+if(pet=="🐦 Codorna"){
+item.textContent+="⚡ +1 ganho de energia";
 }
   
 let botao=document.createElement("button");
@@ -672,38 +1013,6 @@ let botao=document.createElement("button");
 botao.textContent="Equipar";
 
 item.appendChild(botao);
-  
-let desequipar=document.createElement("button");
-
-desequipar.textContent="Desequipar";
-
-item.appendChild(desequipar);
-  
- desequipar.onclick=function(){
-
-if(!petsEquipadosStatus[index]){
-  
-document.getElementById("mensagem").textContent=
-"🐾 Esse pet já está desequipado!";
-
-return;
-
-}
-
-petsEquipadosStatus[index]=false;
-
-petsEquipados--;
-
-recalcularBonusPets();
-   
-atualizar();
-
-document.getElementById("mensagem").textContent=
-"🐾 Pet desequipado!";
-
-salvarJogo();
-   
-};
   
  botao.onclick=function(){
 
@@ -725,7 +1034,15 @@ return;
 }
    
 petsEquipados++;
-   
+
+tocar(900,0.05);
+
+setTimeout(function(){
+
+tocar(1200,0.08);
+
+},50);
+  
 petsEquipadosStatus[index]=true;
 
  if(pet=="🐔 Galinha"){
@@ -743,13 +1060,25 @@ ganhoForca++;
 if(pet=="🦆 Pato"){
 
 vidaMax+=20;
-vida=vidaMax;
 
+if(vida>vidaMax){
+    vida=vidaMax;
+  
+}
 }  
+
+if(pet=="🐦 Codorna"){
+
+ganhoEsteira++;
+
+}
+   
 atualizar();
 
+abrirInventario();
+
 document.getElementById("mensagem").textContent=
-"🐾 Pet equipado!";
+"🐾 Pet desequipado!";
 
 salvarJogo();
    
@@ -766,16 +1095,34 @@ let index=pets.indexOf(pet);
 
 if(index!==-1){
 
+if(petsEquipadosStatus[index]){
+
 petsEquipados--;
+
+}
 
 pets.splice(index,1);
 
 petsEquipadosStatus.splice(index,1);
-
+  
 recalcularBonusPets();
   
 coins+=50;
 
+tocar(600,0.05);
+
+setTimeout(function(){
+
+tocar(900,0.06);
+
+},40);
+
+setTimeout(function(){
+
+tocar(1200,0.08);
+
+},80);
+  
 document.getElementById("mensagem").textContent=
 "🪙 Pet vendido por 50 Snake Coins!";
 
@@ -799,6 +1146,23 @@ lista.appendChild(item);
 document.getElementById("telaInventario").style.display="none";
 
  }
+
+function abrirConfiguracoes(){
+
+let tela=document.getElementById("telaConfiguracoes");
+
+if(tela.style.display=="block"){
+
+tela.style.display="none";
+
+}else{
+
+tela.style.display="block";
+
+}
+
+}
+  
   function abrirLoja(){
 
 let loja=document.getElementById("telaLoja");
@@ -834,7 +1198,8 @@ tela.style.display="block";
 
 
 let ganhoForca=1;
-
+  
+let precoEsteira=400;  
 let precoPets=1500;  
 let precoForca=250;
 let precoVida=300;
@@ -845,13 +1210,31 @@ function comprarForca(){
 if(coins<precoForca){
 
 document.getElementById("mensagem").textContent="❌ Snake Coins insuficientes!";
+
+tocar(150,0.20);
+  
 return;
 
 }
 
 coins-=precoForca;
 
-ganhoForca*=2;
+tocar(700,0.05);
+
+setTimeout(function(){
+
+tocar(900,0.05);
+
+},40);
+
+setTimeout(function(){
+
+tocar(1100,0.08);
+
+},80);
+  
+ganhoForcaBase*=2;
+ganhoForca=ganhoForcaBase;
 
 precoForca*=2;
 
@@ -870,14 +1253,33 @@ function comprarVida(){
 if(coins<precoVida){
 
 document.getElementById("mensagem").textContent="❌ Snake Coins insuficientes!";
+
+tocar(150,0.20);
+  
 return;
 
 }
 
 coins-=precoVida;
 
+tocar(700,0.05);
+
+setTimeout(function(){
+
+tocar(900,0.05);
+
+},40);
+
+setTimeout(function(){
+
+tocar(1100,0.08);
+
+},80);
+  
+vidaBase+=20;
+
 vidaMax+=20;
-vida=vidaMax;
+vida+=20;  
 
 precoVida+=300;
 
@@ -896,12 +1298,29 @@ function comprarEnergia(){
 if(coins<precoEnergia){
 
 document.getElementById("mensagem").textContent="❌ Snake Coins insuficientes!";
+
+tocar(150,0.20);
+  
 return;
 
 }
 
 coins-=precoEnergia;
 
+tocar(700,0.05);
+
+setTimeout(function(){
+
+tocar(900,0.05);
+
+},40);
+
+setTimeout(function(){
+
+tocar(1100,0.08);
+
+},80);
+  
 energiaMax+=10;
 energia=energiaMax;
 
@@ -916,6 +1335,51 @@ atualizar();
   
 salvarJogo();
 }
+
+function comprarEsteira(){
+
+if(coins<precoEsteira){
+
+document.getElementById("mensagem").textContent=
+"❌ Snake Coins insuficientes!";
+
+tocar(150,0.20);
+
+return;
+
+}
+
+coins-=precoEsteira;
+
+tocar(700,0.05);
+
+setTimeout(function(){
+
+tocar(900,0.05);
+
+},40);
+
+setTimeout(function(){
+
+tocar(1100,0.08);
+
+},80);
+
+ganhoEsteiraBase*=2;
+ganhoEsteira=ganhoEsteiraBase;
+
+precoEsteira*=2;
+
+document.getElementById("precoEsteira").textContent=precoEsteira;
+
+document.getElementById("mensagem").textContent=
+"🏃 Agora cada esteira dá +"+ganhoEsteira+" de energia!";
+
+atualizar();
+
+salvarJogo();
+
+}
   
 function comprarLimitePets(){
 
@@ -924,12 +1388,28 @@ if(coins<precoPets){
 document.getElementById("mensagem").textContent=
 "❌ Snake Coins insuficientes!";
 
+tocar(150,0.20);
+  
 return;
 
 }
 
 coins-=precoPets;
 
+tocar(700,0.05);
+
+setTimeout(function(){
+
+tocar(900,0.05);
+
+},40);
+
+setTimeout(function(){
+
+tocar(1100,0.08);
+
+},80);
+  
 limitePets++;
 
 precoPets*=2;
@@ -960,28 +1440,47 @@ if(coins<100){
 document.getElementById("mensagem").textContent=
 "❌ Você não tem Snake Coins suficientes!";
 
+tocar(150,0.20);
+  
 return;
 
 }
 
 coins-=100;
 
+tocar(300,0.08);
+
+setTimeout(function(){
+
+tocar(250,0.08);
+
+},60);
+
+setTimeout(function(){
+
+tocar(700,0.12);
+
+},120);
+  
 let sorteio=Math.random()*100;
 
 let pet="";
 
-if(sorteio<50){
+if(sorteio<40){
 
 pet="🐔 Galinha";
 
-}else if(sorteio<85){
+}else if(sorteio<70){
 
 pet="🐥 Pintinho";
 
-}else{
+}else if(sorteio<90){
 
 pet="🦆 Pato";
 
+}else{
+
+pet="🐦 Codorna";
 
 }
 
@@ -996,8 +1495,6 @@ if(pet=="🐔 Galinha"){
 }
 
 if(pet=="🐥 Pintinho"){
-
-
 
 }
 
